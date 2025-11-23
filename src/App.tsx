@@ -1,5 +1,5 @@
+import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Suspense } from "react";
 import "@fontsource/inter";
 import { useMonopoly } from "./lib/stores/useMonopoly";
 import { ErrorBoundary } from "./components/ErrorBoundary";
