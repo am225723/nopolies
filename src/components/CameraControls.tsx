@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { useTouchControls } from "@/hooks/useTouchControls";
 
 export function CameraControls() {
   const { camera, gl } = useThree();
@@ -11,6 +12,14 @@ export function CameraControls() {
   const flipAngle = useRef(0);
   const isDragging = useRef(false);
   const previousMousePosition = useRef({ x: 0, y: 0 });
+
+  // Touch controls for mobile devices
+  const handleTouchDrag = (deltaX: number, deltaY: number) => {
+    targetRotation.current += deltaX * 0.01;
+    targetZoom.current = Math.max(15, Math.min(35, targetZoom.current - deltaY * 0.1));
+  };
+
+  useTouchControls(handleTouchDrag);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

@@ -13,20 +13,70 @@ A immersive 3D Monopoly-style board game built with React, Three.js, and Google 
 
 ## Quick Start
 
-1. Install dependencies:
+### Prerequisites
+
+- Node.js 18+ 
+- npm or yarn
+- VS Code (recommended)
+
+### Setup
+
+1. **Clone and install dependencies:**
 ```bash
+git clone https://github.com/am225723/nopolies.git
+cd nopolies
 npm install
 ```
 
-2. Start development server:
+2. **VS Code Setup** (Recommended)
+- Open the project in VS Code
+- Install the recommended extensions when prompted
+- The project includes pre-configured settings for optimal development
+
+3. **Start development server:**
 ```bash
 npm run dev
 ```
 
-3. Build for production:
+4. **Run tests:**
+```bash
+npm run test
+```
+
+5. **Build for production:**
 ```bash
 npm run build
 ```
+
+## VS Code Development
+
+The project includes comprehensive VS Code configuration:
+
+### Recommended Extensions
+- ESLint - Code linting
+- Prettier - Code formatting
+- Tailwind CSS IntelliSense - CSS autocompletion
+- TypeScript Importer - Smart imports
+- Jest - Test runner
+- REST Client - API testing
+
+### Debug Configurations
+- **Launch dev server** - Start development server with debugging
+- **Debug tests** - Run Jest tests with debugging
+
+### Tasks
+- **Build** - Production build (Ctrl+Shift+P → Tasks: Run Task → Build)
+- **Test** - Run test suite
+- **Lint** - Run ESLint
+- **Format** - Format code with Prettier
+- **Dev Server** - Start development server
+
+### Key Features
+- **Format on save** - Auto-formats code when saving
+- **Auto-fix on save** - Fixes ESLint issues automatically
+- **Intelligent imports** - Auto-imports TypeScript modules
+- **Tailwind CSS** - Full CSS framework support
+- **TypeScript** - Enhanced TypeScript experience
 
 ## Deployment
 
