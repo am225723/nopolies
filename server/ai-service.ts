@@ -10,7 +10,7 @@ export async function generateGameToken(prompt: string, theme?: string): Promise
     
     // Return a placeholder response
     // In actual implementation, this would return the generated image URL
-    return `/api/placeholder-token/${Date.now()}.png`;
+    return `https://placehold.co/400x400?text=${encodeURIComponent(prompt.substring(0, 20))}`;
   } catch (error) {
     console.error("Token generation error:", error);
     throw new Error("Failed to generate token");
