@@ -54,9 +54,7 @@ app.use((req, res, next) => {
   next();
 });
 
-export default async function runApp(
-  setup: (app: Express, server: Server) => Promise<void>,
-) {
+export async function setupApp(app: Express) {
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -66,6 +64,14 @@ export default async function runApp(
     res.status(status).json({ message });
     throw err;
   });
+
+  return server;
+}
+
+export default async function runApp(
+  setup: (app: Express, server: Server) => Promise<void>,
+) {
+  const server = await setupApp(app);
 
   // importantly run the final setup after setting up all the other routes so
   // the catch-all route doesn't interfere with the other routes
