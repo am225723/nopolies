@@ -7,7 +7,7 @@ import { type Express } from "express";
 import { createServer as createViteServer, createLogger } from "vite";
 
 import viteConfig from "../vite.config";
-import runApp from "./app";
+import runApp, { log } from "./app";
 
 export async function setupVite(app: Express, server: Server) {
   const viteLogger = createLogger();
@@ -43,8 +43,18 @@ export async function setupVite(app: Express, server: Server) {
         "index.html",
       );
 
+      if (!fs.existsSync(clientTemplate)) {
+         throw new Error(`Client template not found at ${clientTemplate}`);
+      }
+
       // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
+
+      // Inject script if not present (simple check)
+      if (!template.includes('src="/src/main.tsx"')) {
+         log(`Warning: client/index.html does not contain 'src="/src/main.tsx"', cache busting might fail.`);
+      }
+
       template = template.replace(
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`,
