@@ -93,7 +93,6 @@ export function Board3D() {
         color="#FFD700"
         anchorX="center"
         anchorY="middle"
-        font="/fonts/inter.json"
       >
         MONOPOLY
       </Text>
@@ -143,7 +142,6 @@ function BoardSpace({ position, x, z, property, isCorner }: any) {
           anchorX="center"
           anchorY="middle"
           maxWidth={size * 0.8}
-          font="/fonts/inter.json"
         >
           {property.name}
         </Text>
@@ -158,7 +156,6 @@ function BoardSpace({ position, x, z, property, isCorner }: any) {
           color="#2E8B57"
           anchorX="center"
           anchorY="middle"
-          font="/fonts/inter.json"
         >
           {getCornerLabel(position)}
         </Text>
@@ -173,7 +170,6 @@ function BoardSpace({ position, x, z, property, isCorner }: any) {
           color="#000000"
           anchorX="center"
           anchorY="middle"
-          font="/fonts/inter.json"
         >
           ${property.price}
         </Text>
