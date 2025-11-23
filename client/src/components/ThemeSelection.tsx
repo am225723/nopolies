@@ -6,21 +6,40 @@ import { themes } from "@/data/themes";
 import { useState } from "react";
 
 export function ThemeSelection() {
-  const { selectedTheme, players, setPhase, setProperties, addPlayer, removePlayer, updatePlayer } = useMonopoly();
+  const { selectedTheme, players, setPhase, setProperties, addPlayer, removePlayer, updatePlayer, customBoard } = useMonopoly();
   const [newPlayerName, setNewPlayerName] = useState("");
 
-  const theme = selectedTheme ? themes[selectedTheme] : null;
+  const theme = selectedTheme && selectedTheme !== "custom" ? themes[selectedTheme] : null;
+  const isCustomBoard = selectedTheme === "custom";
 
-  if (!theme) return null;
+  if (!theme && !isCustomBoard) return null;
 
   const handleStartGame = () => {
-    const propertiesWithIds = theme.properties.map((prop, idx) => ({
-      ...prop,
-      id: idx + 1,
-      owner: null,
-      houses: 0
-    }));
-    setProperties(propertiesWithIds);
+    if (isCustomBoard) {
+      // Deep clone custom board properties to ensure complete game state independence
+      const freshProperties = customBoard.properties.map(prop => {
+        const cloned = structuredClone(prop);
+        return {
+          ...cloned,
+          id: cloned.position, // Deterministic ID based on position
+          owner: null, // Reset ownership
+          houses: 0 // Reset houses
+        };
+      });
+      setProperties(freshProperties);
+    } else if (theme) {
+      // Deep clone theme properties to prevent shared references with base theme data
+      const propertiesWithIds = theme.properties.map((prop) => {
+        const cloned = structuredClone(prop);
+        return {
+          ...cloned,
+          id: cloned.position, // Use position as ID for consistency
+          owner: null,
+          houses: 0
+        };
+      });
+      setProperties(propertiesWithIds);
+    }
     setPhase("playing");
   };
 
@@ -51,9 +70,11 @@ export function ThemeSelection() {
         </Button>
 
         <h1 className="text-4xl font-bold mb-2 text-center text-green-800">
-          {theme.name}
+          {isCustomBoard ? customBoard.name : theme?.name}
         </h1>
-        <p className="text-center text-gray-600 mb-8">{theme.description}</p>
+        <p className="text-center text-gray-600 mb-8">
+          {isCustomBoard ? "Your custom board" : theme?.description}
+        </p>
 
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Players ({players.length}/6)</h2>
@@ -104,13 +125,19 @@ export function ThemeSelection() {
           <h3 className="font-bold mb-2">Property Preview</h3>
           <div className="max-h-48 overflow-y-auto bg-gray-50 p-4 rounded">
             <div className="grid grid-cols-2 gap-2 text-sm">
-              {theme.properties.slice(0, 10).map((prop) => (
-                <div key={prop.position}>• {prop.name}</div>
-              ))}
+              {isCustomBoard ? (
+                customBoard.properties.slice(0, 10).map((prop) => (
+                  <div key={prop.position}>• {prop.name}</div>
+                ))
+              ) : theme ? (
+                theme.properties.slice(0, 10).map((prop) => (
+                  <div key={prop.position}>• {prop.name}</div>
+                ))
+              ) : null}
             </div>
-            {theme.properties.length > 10 && (
+            {((isCustomBoard && customBoard.properties.length > 10) || (theme && theme.properties.length > 10)) && (
               <div className="text-center mt-2 text-gray-500">
-                +{theme.properties.length - 10} more properties...
+                +{isCustomBoard ? customBoard.properties.length - 10 : theme!.properties.length - 10} more properties...
               </div>
             )}
           </div>

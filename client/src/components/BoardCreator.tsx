@@ -8,8 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PropertyColor } from "@/lib/stores/useMonopoly";
 
 export function BoardCreator() {
-  const { setPhase, setProperties, customBoardName, setCustomBoardName } = useMonopoly();
-  const [properties, setLocalProperties] = useState<any[]>([]);
+  const { setPhase, setCustomBoard, customBoard, setTheme } = useMonopoly();
+  const [boardName, setBoardName] = useState(customBoard.name);
+  // Deep clone custom board properties to prevent mutation of stored data
+  const [properties, setLocalProperties] = useState<any[]>(
+    customBoard.properties.map(prop => ({
+      ...prop,
+      rent: Array.isArray(prop.rent) ? [...prop.rent] : []
+    }))
+  );
 
   const propertyPositions = [1, 3, 6, 8, 9, 11, 13, 14, 16, 18, 19, 21, 23, 24, 26, 27, 29, 31, 32, 34, 37, 39];
   const railroadPositions = [5, 15, 25, 35];
@@ -23,12 +30,22 @@ export function BoardCreator() {
       const isRailroad = railroadPositions.includes(availablePosition);
       const isUtility = utilityPositions.includes(availablePosition);
       
+      // Set correct default rent arrays based on property type
+      let defaultRent;
+      if (isRailroad) {
+        defaultRent = [25, 50, 100, 200]; // 4 tiers for railroads
+      } else if (isUtility) {
+        defaultRent = [4, 10]; // 2 tiers for utilities (multipliers)
+      } else {
+        defaultRent = [10, 50, 150, 450, 625, 750]; // 6 tiers for regular properties
+      }
+      
       setLocalProperties([...properties, {
         position: availablePosition,
         name: isRailroad ? "Railroad" : isUtility ? "Utility" : "New Property",
         color: isRailroad ? "railroad" : isUtility ? "utility" : "brown",
         price: isRailroad || isUtility ? 150 : 100,
-        rent: isRailroad || isUtility ? [25, 50] : [10, 50, 150, 450, 625, 750],
+        rent: defaultRent,
         id: properties.length + 1,
         owner: null,
         houses: 0
@@ -48,7 +65,51 @@ export function BoardCreator() {
 
   const handleSaveBoard = () => {
     if (properties.length >= 10) {
-      setProperties(properties);
+      const finalName = boardName.trim() || "Custom Monopoly Board";
+      
+      // Normalize and deep clone properties with deterministic IDs based on position
+      const normalizedProperties = properties
+        .sort((a, b) => a.position - b.position)
+        .map((prop) => {
+          // Enforce correct rent array based on property type
+          let normalizedRent;
+          if (prop.color === "railroad") {
+            // Railroads must have exactly 4 tiers
+            if (Array.isArray(prop.rent) && prop.rent.length === 4) {
+              normalizedRent = [...prop.rent];
+            } else {
+              normalizedRent = [25, 50, 100, 200]; // Default values
+            }
+          } else if (prop.color === "utility") {
+            // Utilities must have exactly 2 tiers (multipliers)
+            if (Array.isArray(prop.rent) && prop.rent.length === 2) {
+              normalizedRent = [...prop.rent];
+            } else {
+              normalizedRent = [4, 10]; // Default values
+            }
+          } else {
+            // Regular properties must have exactly 6 tiers
+            if (Array.isArray(prop.rent) && prop.rent.length === 6) {
+              normalizedRent = [...prop.rent];
+            } else {
+              normalizedRent = [10, 50, 150, 450, 625, 750]; // Default values
+            }
+          }
+          
+          return {
+            ...prop,
+            id: prop.position, // Use position as deterministic ID
+            owner: null, // Always reset ownership
+            houses: 0, // Always reset houses
+            rent: normalizedRent // Fully validated and cloned rent array
+          };
+        });
+      
+      setCustomBoard({
+        name: finalName,
+        properties: normalizedProperties
+      });
+      setTheme("custom");
       setPhase("theme_selection");
     }
   };
@@ -72,8 +133,8 @@ export function BoardCreator() {
           <div className="mb-6">
             <Label>Board Name</Label>
             <Input
-              value={customBoardName}
-              onChange={(e) => setCustomBoardName(e.target.value)}
+              value={boardName}
+              onChange={(e) => setBoardName(e.target.value)}
               placeholder="My Custom Board"
               className="text-lg"
             />

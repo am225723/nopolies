@@ -27,6 +27,11 @@ export interface Player {
 
 export type GamePhase = "menu" | "theme_selection" | "board_creator" | "token_creator" | "playing" | "property_action";
 
+export interface CustomBoard {
+  name: string;
+  properties: Property[];
+}
+
 export interface MonopolyState {
   phase: GamePhase;
   selectedTheme: string | null;
@@ -35,7 +40,7 @@ export interface MonopolyState {
   properties: Property[];
   diceValues: [number, number];
   selectedProperty: Property | null;
-  customBoardName: string;
+  customBoard: CustomBoard;
   
   setPhase: (phase: GamePhase) => void;
   setTheme: (theme: string) => void;
@@ -48,7 +53,7 @@ export interface MonopolyState {
   nextTurn: () => void;
   selectProperty: (property: Property | null) => void;
   setProperties: (properties: Property[]) => void;
-  setCustomBoardName: (name: string) => void;
+  setCustomBoard: (board: CustomBoard) => void;
   startGame: () => void;
   resetGame: () => void;
 }
@@ -67,7 +72,10 @@ export const useMonopoly = create<MonopolyState>()(
     properties: [],
     diceValues: [1, 1],
     selectedProperty: null,
-    customBoardName: "My Custom Board",
+    customBoard: {
+      name: "My Custom Board",
+      properties: []
+    },
     
     setPhase: (phase) => set({ phase }),
     
@@ -147,7 +155,7 @@ export const useMonopoly = create<MonopolyState>()(
     
     setProperties: (properties) => set({ properties }),
     
-    setCustomBoardName: (name) => set({ customBoardName: name }),
+    setCustomBoard: (board) => set({ customBoard: board }),
     
     startGame: () => set({ phase: "playing" }),
     
@@ -157,7 +165,11 @@ export const useMonopoly = create<MonopolyState>()(
       players: initialPlayers,
       currentPlayerIndex: 0,
       diceValues: [1, 1],
-      selectedProperty: null
+      selectedProperty: null,
+      customBoard: {
+        name: "My Custom Board",
+        properties: []
+      }
     })
   }))
 );
