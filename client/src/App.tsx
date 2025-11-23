@@ -1,73 +1,76 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useEffect, useState } from "react";
-import { KeyboardControls } from "@react-three/drei";
-// import { useAudio } from "./lib/stores/useAudio";
+import { Suspense } from "react";
 import "@fontsource/inter";
+import { useMonopoly } from "./lib/stores/useMonopoly";
+import { Menu } from "./components/Menu";
+import { ThemeSelection } from "./components/ThemeSelection";
+import { BoardCreator } from "./components/BoardCreator";
+import { TokenCreator } from "./components/TokenCreator";
+import { Board3D } from "./components/Board3D";
+import { GamePiece } from "./components/GamePiece";
+import { GameUI } from "./components/GameUI";
+import { CameraControls } from "./components/CameraControls";
 
-// Import our game components
-
-// Define control keys for the game
-// const controls = [
-//   { name: "forward", keys: ["KeyW", "ArrowUp"] },
-//   { name: "backward", keys: ["KeyS", "ArrowDown"] },
-//   { name: "leftward", keys: ["KeyA", "ArrowLeft"] },
-//   { name: "rightward", keys: ["KeyD", "ArrowRight"] },
-//   { name: "punch", keys: ["KeyJ"] },
-//   { name: "kick", keys: ["KeyK"] },
-//   { name: "block", keys: ["KeyL"] },
-//   { name: "special", keys: ["Space"] },
-// ];
-
-// Main App component
 function App() {
-  //const { gamePhase } = useFighting();
-  const [showCanvas, setShowCanvas] = useState(false);
-
-  // Show the canvas once everything is loaded
-  useEffect(() => {
-    setShowCanvas(true);
-  }, []);
+  const { phase, players } = useMonopoly();
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden' }}/>
-    // {showCanvas && (
-    //   <KeyboardControls map={controls}>
-    //     {gamePhase === 'menu' && <Menu />}
+    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden' }}>
+      {phase === "menu" && <Menu />}
+      {phase === "theme_selection" && <ThemeSelection />}
+      {phase === "board_creator" && <BoardCreator />}
+      {phase === "token_creator" && <TokenCreator />}
 
-    //     {gamePhase === 'character_selection' && <CharacterSelection />}
+      {(phase === "playing" || phase === "property_action") && (
+        <>
+          <Canvas
+            shadows
+            camera={{
+              position: [20, 15, 20],
+              fov: 50,
+              near: 0.1,
+              far: 1000
+            }}
+            gl={{
+              antialias: true,
+              powerPreference: "high-performance"
+            }}
+          >
+            <color attach="background" args={["#87CEEB"]} />
 
-    //     {(gamePhase === 'fighting' || gamePhase === 'round_end' || gamePhase === 'match_end') && (
-    //       <>
-    //         <Canvas
-    //           shadows
-    //           camera={{
-    //             position: [0, 2, 8],
-    //             fov: 45,
-    //             near: 0.1,
-    //             far: 1000
-    //           }}
-    //           gl={{
-    //             antialias: true,
-    //             powerPreference: "default"
-    //           }}
-    //         >
-    //           <color attach="background" args={["#111111"]} />
+            {/* Lighting */}
+            <ambientLight intensity={0.6} />
+            <directionalLight
+              position={[10, 20, 10]}
+              intensity={1}
+              castShadow
+              shadow-mapSize-width={2048}
+              shadow-mapSize-height={2048}
+              shadow-camera-far={50}
+              shadow-camera-left={-30}
+              shadow-camera-right={30}
+              shadow-camera-top={30}
+              shadow-camera-bottom={-30}
+            />
+            <pointLight position={[-10, 10, -10]} intensity={0.5} />
 
-    //           {/* Lighting */}
-    //           <Lights />
+            <Suspense fallback={null}>
+              <Board3D />
+              {players.map(player => (
+                <GamePiece
+                  key={player.id}
+                  player={player}
+                  targetPosition={player.position}
+                />
+              ))}
+            </Suspense>
 
-    //           <Suspense fallback={null}>
-    //           </Suspense>
-    //         </Canvas>
-    //         <GameUI />
-    //       </>
-    //     )}
-
-    //     <ShortcutManager />
-    //     <SoundManager />
-    //   </KeyboardControls>
-    // )}
-    //</div>
+            <CameraControls />
+          </Canvas>
+          <GameUI />
+        </>
+      )}
+    </div>
   );
 }
 
