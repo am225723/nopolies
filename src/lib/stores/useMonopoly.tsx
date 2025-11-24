@@ -25,7 +25,7 @@ export interface Player {
   tokenUrl?: string;
 }
 
-export type GamePhase = "menu" | "theme_selection" | "board_creator" | "token_creator" | "player_setup" | "playing" | "property_action";
+<export type GamePhase = "menu" | "theme_selection" | "board_creator" | "token_creator" | "player_setup" | "multiplayer_lobby" | "playing" | "property_action";
 
 export interface CustomBoard {
   name: string;

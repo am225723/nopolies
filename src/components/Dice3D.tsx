@@ -12,7 +12,7 @@ interface DiceProps {
 }
 
 export function Dice3D({ value, position, isRolling, onRollComplete, onClick }: DiceProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<THREE.Group>(null);
   const [rotation, setRotation] = useState([0, 0, 0]);
   const [velocity, setVelocity] = useState({ x: 0, y: 0, z: 0 });
   const [rollTime, setRollTime] = useState(0);
