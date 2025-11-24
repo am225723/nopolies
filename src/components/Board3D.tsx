@@ -1,7 +1,7 @@
 import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { Text } from "@react-three/drei";
+import { Text, RoundedBox } from "@react-three/drei";
 import { useMonopoly } from "@/lib/stores/useMonopoly";
 import { getPropertyColor } from "@/data/themes";
 
@@ -11,6 +11,9 @@ const SPACE_SIZE = BOARD_SIZE / 10;
 export function Board3D() {
   const { properties } = useMonopoly();
   const boardRef = useRef<THREE.Group>(null);
+
+  // Debug log to check if component is rendering
+  console.log('Board3D rendering, properties:', properties.length);
 
   const boardSpaces = useMemo(() => {
     const spaces = [];
@@ -60,13 +63,17 @@ export function Board3D() {
 
       const property = properties.find(p => p.position === i);
       const isCorner = i === 0 || i === 10 || i === 20 || i === 30;
+      const isChance = i === 7 || i === 22 || i === 36;
+      const isCommunityChest = i === 2 || i === 17 || i === 33;
 
       spaces.push({
         position: i,
         x,
         z,
         property,
-        isCorner
+        isCorner,
+        isChance,
+        isCommunityChest
       });
     }
     return spaces;
@@ -74,18 +81,25 @@ export function Board3D() {
 
   return (
     <group ref={boardRef}>
-      {/* Board base */}
+      {/* Board base - always visible */}
       <mesh position={[0, -0.1, 0]} receiveShadow>
         <boxGeometry args={[BOARD_SIZE + 2, 0.2, BOARD_SIZE + 2]} />
+        <meshStandardMaterial color="#8B7355" />
+      </mesh>
+
+      {/* Inner board surface */}
+      <mesh position={[0, 0, 0]} receiveShadow>
+        <boxGeometry args={[BOARD_SIZE, 0.1, BOARD_SIZE]} />
         <meshStandardMaterial color="#F5F5DC" />
       </mesh>
 
       {/* Center logo area */}
-      <mesh position={[0, 0, 0]} receiveShadow>
+      <mesh position={[0, 0.05, 0]} receiveShadow>
         <boxGeometry args={[BOARD_SIZE - 4, 0.1, BOARD_SIZE - 4]} />
         <meshStandardMaterial color="#2E8B57" />
       </mesh>
 
+      {/* MONOPOLY text - ensure this renders */}
       <Text
         position={[0, 0.2, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
@@ -97,7 +111,7 @@ export function Board3D() {
         MONOPOLY
       </Text>
 
-      {/* Board spaces */}
+      {/* Board spaces - render even if no properties */}
       {boardSpaces.map((space) => (
         <BoardSpace
           key={space.position}
@@ -106,21 +120,22 @@ export function Board3D() {
           z={space.z}
           property={space.property}
           isCorner={space.isCorner}
+          isChance={space.isChance}
+          isCommunityChest={space.isCommunityChest}
         />
       ))}
     </group>
   );
 }
 
-function BoardSpace({ position, x, z, property, isCorner }: any) {
+function BoardSpace({ position, x, z, property, isCorner, isChance, isCommunityChest }: any) {
   const size = isCorner ? SPACE_SIZE * 1.2 : SPACE_SIZE;
-  const color = property ? getPropertyColor(property.color) : "#EEEEEE";
 
   return (
     <group position={[x, 0, z]}>
-      {/* Space base */}
-      <mesh position={[0, 0, 0]} receiveShadow castShadow>
-        <boxGeometry args={[size * 0.9, 0.15, size * 0.9]} />
+      {/* Space base - always render */}
+      <mesh position={[0, 0.05, 0]} receiveShadow castShadow>
+        <boxGeometry args={[size * 0.9, 0.1, size * 0.9]} />
         <meshStandardMaterial color="#FFFFFF" />
       </mesh>
 
@@ -128,7 +143,7 @@ function BoardSpace({ position, x, z, property, isCorner }: any) {
       {property && (
         <mesh position={[0, 0.08, size * 0.35]} receiveShadow castShadow>
           <boxGeometry args={[size * 0.9, 0.01, size * 0.2]} />
-          <meshStandardMaterial color={color} />
+          <meshStandardMaterial color={getPropertyColor(property.color)} />
         </mesh>
       )}
 
@@ -158,6 +173,20 @@ function BoardSpace({ position, x, z, property, isCorner }: any) {
           anchorY="middle"
         >
           {getCornerLabel(position)}
+        </Text>
+      )}
+
+      {/* Chance/Community Chest labels */}
+      {(isChance || isCommunityChest) && (
+        <Text
+          position={[0, 0.1, 0]}
+          rotation={[-Math.PI / 2, 0, getRotationForPosition(position)]}
+          fontSize={0.2}
+          color="#000000"
+          anchorX="center"
+          anchorY="middle"
+        >
+          {isChance ? "CHANCE" : "COMMUNITY CHEST"}
         </Text>
       )}
 

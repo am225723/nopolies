@@ -8,7 +8,7 @@ export function Menu() {
 
   const handleThemeSelect = (themeKey: string) => {
     setTheme(themeKey);
-    setPhase("theme_selection");
+    setPhase("player_setup");
   };
 
   return (

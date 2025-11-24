@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import "@fontsource/inter";
 import { useMonopoly } from "./lib/stores/useMonopoly";
@@ -9,13 +9,16 @@ import { Menu } from "./components/Menu";
 import { ThemeSelection } from "./components/ThemeSelection";
 import { BoardCreator } from "./components/BoardCreator";
 import { TokenCreator } from "./components/TokenCreator";
+import { TokenSelection } from "./components/TokenSelection";
 import { Board3D } from "./components/Board3D";
 import { GamePiece } from "./components/GamePiece";
+import { DicePair } from "./components/Dice3D";
 import { GameUI } from "./components/GameUI";
 import { CameraControls } from "./components/CameraControls";
 
 function App() {
-  const { phase, players } = useMonopoly();
+  const { phase, players, diceValues, rollDice } = useMonopoly();
+  const [isRolling, setIsRolling] = useState(false);
 
   React.useEffect(() => {
     // Track app initialization
@@ -30,6 +33,7 @@ function App() {
         {phase === "theme_selection" && <ThemeSelection />}
         {phase === "board_creator" && <BoardCreator />}
         {phase === "token_creator" && <TokenCreator />}
+        {phase === "player_setup" && <TokenSelection />}
 
         {(phase === "playing" || phase === "property_action") && (
           <>
@@ -76,6 +80,21 @@ function App() {
                     targetPosition={player.position}
                   />
                 ))}
+                <DicePair
+                  dice1={diceValues[0]}
+                  dice2={diceValues[1]}
+                  isRolling={isRolling}
+                  onRollComplete={() => setIsRolling(false)}
+                  onRollRequest={() => {
+                    if (!isRolling) {
+                      setIsRolling(true);
+                      rollDice();
+                      setTimeout(() => {
+                        setIsRolling(false);
+                      }, 2500);
+                    }
+                  }}
+                />
               </Suspense>
 
               <CameraControls />

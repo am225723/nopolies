@@ -3,8 +3,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getPropertyColor } from "@/data/themes";
+import { useState } from "react";
 
 export function GameUI() {
+  const [isRolling, setIsRolling] = useState(false);
   const { 
     phase, 
     players, 
@@ -18,6 +20,16 @@ export function GameUI() {
   } = useMonopoly();
 
   if (phase !== "playing" && phase !== "property_action") return null;
+
+  const handleRollRequest = () => {
+    if (!isRolling) {
+      setIsRolling(true);
+      rollDice();
+      setTimeout(() => {
+        setIsRolling(false);
+      }, 2500);
+    }
+  };
 
   const currentPlayer = players[currentPlayerIndex];
 
@@ -71,23 +83,21 @@ export function GameUI() {
             <div className="text-sm text-gray-600">Position: {currentPlayer.position}</div>
           </div>
 
-          <div className="flex gap-4 items-center justify-center">
-            <div className="flex gap-2">
-              <div className="w-12 h-12 flex items-center justify-center bg-white border-4 border-gray-800 rounded-lg shadow-md">
-                <span className="text-2xl font-bold">{diceValues[0]}</span>
-              </div>
-              <div className="w-12 h-12 flex items-center justify-center bg-white border-4 border-gray-800 rounded-lg shadow-md">
-                <span className="text-2xl font-bold">{diceValues[1]}</span>
+          <div className="flex flex-col items-center gap-3">
+            <div className="text-sm text-gray-600">
+              Click the dice to roll them!
+            </div>
+            
+            <div className="flex gap-4 items-center justify-center">
+              <div className="flex gap-2">
+                <div className={`w-14 h-14 flex items-center justify-center bg-white border-4 border-gray-800 rounded-lg shadow-md ${isRolling ? 'animate-bounce' : ''}`}>
+                  <span className="text-3xl font-bold">{diceValues[0]}</span>
+                </div>
+                <div className={`w-14 h-14 flex items-center justify-center bg-white border-4 border-gray-800 rounded-lg shadow-md ${isRolling ? 'animate-bounce' : ''}`}>
+                  <span className="text-3xl font-bold">{diceValues[1]}</span>
+                </div>
               </div>
             </div>
-
-            <Button
-              onClick={rollDice}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2"
-              disabled={phase === "property_action"}
-            >
-              Roll Dice
-            </Button>
 
             {phase === "playing" && (
               <Button
