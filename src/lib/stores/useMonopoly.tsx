@@ -50,11 +50,17 @@ interface MonopolyStore {
   selectedProperty: Property | null;
   winner: Player | null;
   customBoard: CustomBoard;
+  properties: Property[];
+  selectedTheme: string;
+  customTokens: string[];
   
   // Actions
   setPhase: (phase: GamePhase) => void;
   setPlayers: (players: Player[]) => void;
   setCustomBoard: (board: CustomBoard) => void;
+  setTheme: (theme: string) => void;
+  setProperties: (properties: Property[]) => void;
+  addCustomToken: (tokenUrl: string) => void;
   addPlayer: (player: Player) => void;
   removePlayer: (playerId: string) => void;
   setCurrentPlayer: (index: number) => void;
@@ -138,12 +144,23 @@ const useMonopolyStore = create<MonopolyStore>()(
       selectedProperty: null,
       winner: null,
       customBoard: { name: 'Custom Board', properties: [] },
+      properties: defaultProperties,
+      selectedTheme: 'classic',
+      customTokens: [],
 
       setPhase: (phase) => set({ phase }),
       
       setPlayers: (players) => set({ players }),
       
       setCustomBoard: (board) => set({ customBoard: board }),
+      
+      setTheme: (theme) => set({ selectedTheme: theme }),
+      
+      setProperties: (properties) => set({ properties, board: properties }),
+      
+      addCustomToken: (tokenUrl) => set((state) => ({
+        customTokens: [...state.customTokens, tokenUrl],
+      })),
       
       addPlayer: (player) => set((state) => ({
         players: [...state.players, player],

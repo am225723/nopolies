@@ -6,10 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function TokenCreator() {
-  const { setPhase, selectedTheme } = useMonopoly();
+  const { setPhase, selectedTheme, addCustomToken, customTokens } = useMonopoly();
   const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
-  const [generatedTokens, setGeneratedTokens] = useState<string[]>([]);
+  const [generatedTokens, setGeneratedTokens] = useState<string[]>(customTokens);
 
   const handleGenerateToken = async () => {
     if (!prompt) return;
@@ -111,11 +111,12 @@ export function TokenCreator() {
                       size="sm"
                       className="w-full"
                       onClick={() => {
-                        // Save token selection
-                        console.log("Selected token:", url);
+                        // Save token to store
+                        addCustomToken(url);
+                        alert('Token saved! You can now use it in game setup.');
                       }}
                     >
-                      Use This
+                      Save Token
                     </Button>
                   </Card>
                 ))}
@@ -131,11 +132,11 @@ export function TokenCreator() {
           </div>
 
           <Button
-            onClick={() => setPhase("theme_selection")}
+            onClick={() => setPhase("menu")}
             variant="outline"
             className="w-full"
           >
-            Continue to Game Setup
+            Back to Menu
           </Button>
         </Card>
       </div>

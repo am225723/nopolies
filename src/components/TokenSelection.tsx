@@ -26,8 +26,8 @@ const TOKENS: Token[] = [
 export function TokenSelection() {
   const [playerName, setPlayerName] = useState('');
   const [selectedToken, setSelectedToken] = useState<string>('');
-  const [playerCount, setPlayerCount] = useState(2);
-  const { setPhase, setPlayers, setBoard, setCurrentPlayer, selectedTheme } = useMonopoly();
+  const [playerCount, setPlayerCount] = useState(1);
+  const { setPhase, setPlayers, setProperties, setCurrentPlayer, selectedTheme, customTokens } = useMonopoly();
 
   const handleStartGame = () => {
     if (!playerName.trim() || !selectedToken) {
@@ -39,11 +39,17 @@ export function TokenSelection() {
     setPlayers([]);
 
     // Create the human player
+    // Check if selected token is a custom token (URL) or standard token (ID)
+    const isCustomToken = selectedToken.startsWith('http');
+    const tokenColor = isCustomToken 
+      ? '#' + Math.floor(Math.random()*16777215).toString(16) // Random color for custom tokens
+      : TOKENS.find(t => t.id === selectedToken)?.color || '#000000';
+    
     const humanPlayer = {
       id: 'player-1',
       name: playerName.trim(),
       token: selectedToken,
-      color: TOKENS.find(t => t.id === selectedToken)?.color || '#000000',
+      color: tokenColor,
       position: 0,
       money: 1500,
       properties: [],
@@ -80,7 +86,7 @@ export function TokenSelection() {
     setCurrentPlayer(0);
 
     // Load properties for selected theme or use default
-    if (selectedTheme) {
+    if (selectedTheme && selectedTheme !== 'classic') {
       import('@/data/themes').then(({ themes }) => {
         const theme = themes[selectedTheme];
         if (theme && theme.properties) {
@@ -94,7 +100,7 @@ export function TokenSelection() {
             color: p.color,
             position: index,
           }));
-          setBoard(boardProperties);
+          setProperties(boardProperties);
         }
         setPhase('playing');
       }).catch(() => {
@@ -102,7 +108,7 @@ export function TokenSelection() {
         setPhase('playing');
       });
     } else {
-      // Default to playing phase
+      // Use default properties for classic theme
       setPhase('playing');
     }
   };
@@ -149,6 +155,27 @@ export function TokenSelection() {
                   </div>
                 </Card>
               ))}
+              {/* Custom AI Tokens */}
+              {customTokens.map((tokenUrl, index) => (
+                <Card
+                  key={`custom-${index}`}
+                  className={`p-4 cursor-pointer transition-all hover:shadow-lg ${
+                    selectedToken === tokenUrl
+                      ? 'ring-2 ring-green-500 bg-green-50'
+                      : 'hover:scale-105'
+                  }`}
+                  onClick={() => setSelectedToken(tokenUrl)}
+                >
+                  <div className="text-center">
+                    <img 
+                      src={tokenUrl} 
+                      alt={`Custom Token ${index + 1}`}
+                      className="w-16 h-16 mx-auto mb-2 object-contain"
+                    />
+                    <div className="font-semibold text-xs">Custom {index + 1}</div>
+                  </div>
+                </Card>
+              ))}
             </div>
           </div>
 
@@ -158,16 +185,19 @@ export function TokenSelection() {
             <input
               id="playerCount"
               type="range"
-              min="2"
+              min="1"
               max="8"
               value={playerCount}
               onChange={(e) => setPlayerCount(parseInt(e.target.value))}
               className="w-full"
             />
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>2</span>
+              <span>1 (Solo)</span>
               <span>8</span>
             </div>
+            <p className="text-xs text-gray-500 text-center">
+              {playerCount === 1 ? 'Solo play - just you!' : `You + ${playerCount - 1} AI player${playerCount > 2 ? 's' : ''}`}
+            </p>
           </div>
 
           {/* Action Buttons */}

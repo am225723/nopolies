@@ -17,7 +17,7 @@ export function MultiplayerLobby() {
   const [copied, setCopied] = useState(false);
   const [showRules, setShowRules] = useState(false);
 
-  const { properties } = useMonopoly();
+  const { properties, setPhase } = useMonopoly();
   const multiplayer = useMultiplayer();
 
   const [customRules, setCustomRules] = useState({
@@ -95,7 +95,7 @@ export function MultiplayerLobby() {
             <Button 
               className="w-full" 
               variant="ghost"
-              onClick={() => window.location.reload()}
+              onClick={() => setPhase('menu')}
             >
               Back to Menu
             </Button>
