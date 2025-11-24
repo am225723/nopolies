@@ -1,4 +1,4 @@
-import { generateGameToken } from "../server/ai-service";
+import { generateGameToken } from "../server/ai-service.js";
 
 export default async function handler(req: any, res: any) {
   // Handle CORS
