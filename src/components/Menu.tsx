@@ -5,10 +5,10 @@ import { themes } from "@/data/themes";
 import { Users, User, Palette, Wand2 } from "lucide-react";
 
 export function Menu() {
-  const { setPhase, setTheme } = useMonopoly();
+  const { setPhase, setCurrentTheme } = useMonopoly();
 
   const handleThemeSelect = (themeKey: string) => {
-    setTheme(themeKey);
+    setCurrentTheme(themeKey);
     setPhase("player_setup");
   };
 
