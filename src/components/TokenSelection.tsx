@@ -17,9 +17,9 @@ const TOKENS: Token[] = [
   { id: 'ship', name: 'Ship', icon: '⛵', color: '#0066CC' },
   { id: 'hat', name: 'Hat', icon: '🎩', color: '#8B4513' },
   { id: 'dog', name: 'Dog', icon: '🐕', color: '#8B4513' },
-  { id: 'thimble', name: 'Thimble', icon: '🧵', color: '#C0C0C0' },
+  { id: 'thimble', name: 'Thimble', icon: '🥵', color: '#C0C0C0' },
   { id: 'boot', name: 'Boot', icon: '👢', color: '#654321' },
-  { id: 'wheelbarrow', name: 'Wheelbarrow', icon: '🪣', color: '#8B4513' },
+  { id: 'wheelbarrow', name: 'Wheelbarrow', icon: '🚜', color: '#8B4513' },
   { id: 'iron', name: 'Iron', icon: '⚡', color: '#808080' },
 ];
 
@@ -27,7 +27,7 @@ export function TokenSelection() {
   const [playerName, setPlayerName] = useState('');
   const [selectedToken, setSelectedToken] = useState<string>('');
   const [playerCount, setPlayerCount] = useState(2);
-  const { setPhase, addPlayer, setProperties, selectedTheme } = useMonopoly();
+  const { setPhase, setPlayers, setBoard, setCurrentPlayer, selectedTheme } = useMonopoly();
 
   const handleStartGame = () => {
     if (!playerName.trim() || !selectedToken) {
@@ -35,61 +35,75 @@ export function TokenSelection() {
       return;
     }
 
-    // Add the human player
-    addPlayer({
-      name: playerName,
-      color: selectedToken,
+    // Clear existing players first
+    setPlayers([]);
+
+    // Create the human player
+    const humanPlayer = {
+      id: 'player-1',
+      name: playerName.trim(),
+      token: selectedToken,
+      color: TOKENS.find(t => t.id === selectedToken)?.color || '#000000',
       position: 0,
       money: 1500,
       properties: [],
-      inJail: false,
-    });
+      isAI: false,
+    };
 
-    // Add AI players
+    // Create AI players
+    const aiPlayers: any[] = [];
+    const usedTokens = [selectedToken];
+    
     for (let i = 2; i <= playerCount; i++) {
-      const availableTokens = TOKENS.filter(t => t.id !== selectedToken && !TOKENS.slice(0, i-2).includes(t));
-      const aiToken = availableTokens[Math.floor(Math.random() * availableTokens.length)];
+      const availableTokens = TOKENS.filter(t => !usedTokens.includes(t.id));
+      if (availableTokens.length === 0) break;
       
-      addPlayer({
+      const aiToken = availableTokens[Math.floor(Math.random() * availableTokens.length)];
+      usedTokens.push(aiToken.id);
+      
+      aiPlayers.push({
+        id: `player-${i}`,
         name: `Player ${i}`,
+        token: aiToken.id,
         color: aiToken.color,
         position: 0,
         money: 1500,
         properties: [],
-        inJail: false,
+        isAI: true,
       });
     }
 
-    // Load properties for selected theme
+    // Set all players with human player first
+    setPlayers([humanPlayer, ...aiPlayers]);
+    
+    // Set current player to human player (index 0)
+    setCurrentPlayer(0);
+
+    // Load properties for selected theme or use default
     if (selectedTheme) {
       import('@/data/themes').then(({ themes }) => {
         const theme = themes[selectedTheme];
-        if (theme) {
-          const propertiesWithIds = theme.properties.map((p, index) => ({ 
-            ...p, 
-            id: index + 1, 
-            owner: null, 
-            houses: 0 
+        if (theme && theme.properties) {
+          // Convert theme properties to store format
+          const boardProperties = theme.properties.map((p: any, index: number) => ({
+            id: p.id || `property-${index}`,
+            name: p.name,
+            type: p.type || 'property',
+            price: p.price,
+            rent: p.rent || [0],
+            color: p.color,
+            position: index,
           }));
-          setProperties(propertiesWithIds);
+          setBoard(boardProperties);
         }
+        setPhase('playing');
+      }).catch(() => {
+        // Fallback to playing phase if theme loading fails
         setPhase('playing');
       });
     } else {
-      // Default to cities theme if no theme selected
-      import('@/data/themes').then(({ themes }) => {
-        const theme = themes.cities;
-        if (theme) {
-          const propertiesWithIds = theme.properties.map((p, index) => ({ 
-            ...p, 
-            id: index + 1, 
-            owner: null, 
-            houses: 0 
-          }));
-          setProperties(propertiesWithIds);
-        }
-        setPhase('playing');
-      });
+      // Default to playing phase
+      setPhase('playing');
     }
   };
 
@@ -127,7 +141,7 @@ export function TokenSelection() {
                       ? 'ring-2 ring-green-500 bg-green-50'
                       : 'hover:scale-105'
                   }`}
-                  onClick={() => setSelectedToken(token.color)}
+                  onClick={() => setSelectedToken(token.id)}
                 >
                   <div className="text-center">
                     <div className="text-4xl mb-2">{token.icon}</div>
