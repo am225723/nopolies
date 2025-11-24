@@ -1,47 +1,27 @@
-// AI service for generating custom game tokens using Google Gemini API
-const GEMINI_API_KEY = "AIzaSyBIe4GwIk7V1snPyfSi1qKF4OZ0a-CEofQ";
+// AI service for generating custom game tokens using Pollinations.ai
+// This service generates unique images based on user prompts without requiring API keys
 
 export async function generateGameToken(prompt: string, theme?: string): Promise<string> {
   try {
-    const fullPrompt = `Create a simple, iconic game piece token for a Monopoly board game. ${prompt}. Style: clean, 3D rendered, white background, suitable for a board game piece.${theme ? ` Theme: ${theme}` : ''}`;
+    // Construct a detailed prompt for the image generator
+    const fullPrompt = `3D render of a monopoly board game token, ${prompt}, ${theme ? `theme: ${theme}, ` : ''}isometric view, shiny material, white background, high quality, miniature style`;
     
-    console.log("Generating token with prompt:", fullPrompt);
+    // URL encode the prompt
+    const encodedPrompt = encodeURIComponent(fullPrompt);
     
-    // Use Google Gemini's text generation to create detailed descriptions
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `Based on this description: "${fullPrompt}", create a detailed visual description of what this game token should look like. Be specific about colors, shapes, and style.`
-          }]
-        }]
-      })
-    });
-
-    if (!geminiResponse.ok) {
-      console.log("Gemini API not available, using fallback");
-      const tokenHash = Buffer.from(prompt + (theme || '')).toString('base64').substring(0, 20);
-      return `https://api.dicebear.com/7.x/shapes/svg?seed=${tokenHash}`;
-    }
-
-    const geminiData = await geminiResponse.json();
-    const description = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "Game token";
+    // Use Pollinations.ai to generate the image
+    // It returns the image directly, so we can just use the URL
+    const imageUrl = `https://pollinations.ai/p/${encodedPrompt}?width=512&height=512&seed=${Math.floor(Math.random() * 1000)}`;
     
-    // Generate a unique token identifier based on the prompt and AI description
-    const tokenHash = Buffer.from(prompt + description).toString('base64').substring(0, 20);
+    console.log("Generated token URL:", imageUrl);
     
-    // Use DiceBear API (free) to generate unique avatars based on the token hash
-    // This creates a unique visual representation for each token
-    return `https://api.dicebear.com/7.x/shapes/svg?seed=${tokenHash}`;
+    return imageUrl;
     
   } catch (error) {
     console.error("Token generation error:", error);
-    // Fallback to a simple unique avatar generator (free)
-    const tokenHash = Buffer.from(prompt + (theme || '')).toString('base64').substring(0, 20);
+    // Fallback to DiceBear if something goes wrong
+    // Use btoa for browser compatibility instead of Buffer
+    const tokenHash = btoa(prompt + (theme || '')).substring(0, 20);
     return `https://api.dicebear.com/7.x/shapes/svg?seed=${tokenHash}`;
   }
 }

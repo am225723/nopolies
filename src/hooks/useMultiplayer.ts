@@ -27,6 +27,10 @@ export function useMultiplayer(config: MultiplayerConfig = {}) {
 
   const { setPhase, updatePlayer, setProperties } = useMonopoly();
 
+  // For Vercel deployment, use wss if https, otherwise ws
+  // Since Vercel functions don't support persistent WebSocket connections,
+  // we would typically need a separate WebSocket server (e.g. PartyKit, Pusher, or a custom server).
+  // For this implementation, we'll handle connection errors gracefully and show a message.
   const serverUrl = config.serverUrl || 
     (typeof window !== 'undefined' 
       ? `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`
@@ -37,38 +41,49 @@ export function useMultiplayer(config: MultiplayerConfig = {}) {
       return;
     }
 
-    ws.current = new WebSocket(serverUrl);
+    try {
+      ws.current = new WebSocket(serverUrl);
 
-    ws.current.onopen = () => {
-      console.log('WebSocket connected');
-      setState(prev => ({ ...prev, connected: true, error: null }));
-    };
+      ws.current.onopen = () => {
+        console.log('WebSocket connected');
+        setState(prev => ({ ...prev, connected: true, error: null }));
+      };
 
-    ws.current.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        handleMessage(message);
-      } catch (error) {
-        console.error('Error parsing message:', error);
-      }
-    };
-
-    ws.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      setState(prev => ({ ...prev, error: 'Connection error' }));
-    };
-
-    ws.current.onclose = () => {
-      console.log('WebSocket disconnected');
-      setState(prev => ({ ...prev, connected: false }));
-      
-      // Attempt to reconnect after 3 seconds
-      setTimeout(() => {
-        if (state.roomCode) {
-          connect();
+      ws.current.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          handleMessage(message);
+        } catch (error) {
+          console.error('Error parsing message:', error);
         }
-      }, 3000);
-    };
+      };
+
+      ws.current.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        setState(prev => ({
+          ...prev,
+          error: 'Connection to multiplayer server failed. Multiplayer may not be available in this environment.'
+        }));
+      };
+
+      ws.current.onclose = () => {
+        console.log('WebSocket disconnected');
+        setState(prev => ({ ...prev, connected: false }));
+
+        // Attempt to reconnect after 3 seconds only if we had a room code
+        if (state.roomCode) {
+          setTimeout(() => {
+            connect();
+          }, 3000);
+        }
+      };
+    } catch (err) {
+      console.error("Failed to create WebSocket connection:", err);
+      setState(prev => ({
+        ...prev,
+        error: 'Failed to initialize multiplayer connection.'
+      }));
+    }
   }, [serverUrl, state.roomCode]);
 
   const handleMessage = (message: any) => {
