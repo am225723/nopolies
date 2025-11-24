@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PropertyColor } from "@/lib/stores/useMonopoly";
 
 export function BoardCreator() {
-  const { setPhase, setCustomBoard, customBoard, setTheme } = useMonopoly();
+  const { setPhase, setCustomBoard, customBoard, setCurrentTheme } = useMonopoly();
   const [boardName, setBoardName] = useState(customBoard.name);
   // Deep clone custom board properties to prevent mutation of stored data
   const [properties, setLocalProperties] = useState<any[]>(
@@ -109,7 +109,7 @@ export function BoardCreator() {
         name: finalName,
         properties: normalizedProperties
       });
-      setTheme("custom");
+      setCurrentTheme("custom");
       setPhase("theme_selection");
     }
   };
