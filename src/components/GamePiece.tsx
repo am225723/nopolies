@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { RoundedBox, Cylinder, Cone, Sphere, Torus } from "@react-three/drei";
+import { RoundedBox, Cylinder, Cone, Sphere, Torus, Image } from "@react-three/drei";
 import { Player } from "@/lib/stores/useMonopoly";
 
 const BOARD_SIZE = 20;
@@ -35,7 +35,8 @@ export function GamePiece({ player, targetPosition }: GamePieceProps) {
     }
   });
 
-  const pieceType = getPieceType(player.id);
+  const isCustomToken = player.token && (player.token.startsWith('http') || player.token.startsWith('data:'));
+  const pieceType = isCustomToken ? 'custom' : player.token;
 
   return (
     <group ref={groupRef} position={[0, 0.5, 0]}>
@@ -47,11 +48,31 @@ export function GamePiece({ player, targetPosition }: GamePieceProps) {
       {pieceType === 'boot' && <BootPiece color={player.color} />}
       {pieceType === 'wheelbarrow' && <WheelbarrowPiece color={player.color} />}
       {pieceType === 'iron' && <IronPiece color={player.color} />}
+      {pieceType === 'custom' && <CustomPiece url={player.token} color={player.color} />}
       
       {/* Player name label */}
       <Sphere args={[0.15, 16, 16]} position={[0, 1.2, 0]}>
         <meshStandardMaterial color={player.color} emissive={player.color} emissiveIntensity={0.5} />
       </Sphere>
+    </group>
+  );
+}
+
+function CustomPiece({ url, color }: { url: string; color: string }) {
+  return (
+    <group>
+      {/* Base */}
+      <Cylinder args={[0.3, 0.35, 0.1, 32]} position={[0, 0.05, 0]} castShadow>
+        <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
+      </Cylinder>
+      {/* Token Image Billboard */}
+      <group position={[0, 0.4, 0]}>
+        <Image url={url} transparent scale={[0.8, 0.8, 1]} />
+      </group>
+      {/* Frame for image */}
+      <Torus args={[0.42, 0.03, 8, 32]} position={[0, 0.4, 0]} castShadow>
+         <meshStandardMaterial color={color} metalness={0.8} roughness={0.2} />
+      </Torus>
     </group>
   );
 }
@@ -283,9 +304,4 @@ function getPositionFromIndex(index: number): { x: number; z: number } {
   }
 
   return { x, z };
-}
-
-function getPieceType(playerId: number): string {
-  const types = ['car', 'ship', 'hat', 'dog', 'thimble', 'boot', 'wheelbarrow', 'iron'];
-  return types[(playerId - 1) % types.length];
 }

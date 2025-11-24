@@ -27,7 +27,19 @@ export function TokenSelection() {
   const [playerName, setPlayerName] = useState('');
   const [selectedToken, setSelectedToken] = useState<string>('');
   const [playerCount, setPlayerCount] = useState(2);
-  const { setPhase, setPlayers, setBoard, setCurrentPlayer, selectedTheme } = useMonopoly();
+  const { setPhase, setPlayers, setBoard, setCurrentPlayer, currentTheme, customTokens } = useMonopoly();
+
+  // Combine default tokens with custom tokens
+  const allTokens: Token[] = [
+    ...TOKENS,
+    ...customTokens.map((url, index) => ({
+      id: `custom-${index}`,
+      name: `Custom Token ${index + 1}`,
+      icon: '🎨',
+      color: '#FFD700',
+      imageUrl: url
+    }))
+  ];
 
   const handleStartGame = () => {
     if (!playerName.trim() || !selectedToken) {
@@ -39,11 +51,12 @@ export function TokenSelection() {
     setPlayers([]);
 
     // Create the human player
+    const tokenObj = allTokens.find(t => t.id === selectedToken);
     const humanPlayer = {
       id: 'player-1',
       name: playerName.trim(),
-      token: selectedToken,
-      color: TOKENS.find(t => t.id === selectedToken)?.color || '#000000',
+      token: (tokenObj as any)?.imageUrl || selectedToken,
+      color: tokenObj?.color || '#000000',
       position: 0,
       money: 1500,
       properties: [],
@@ -55,10 +68,10 @@ export function TokenSelection() {
     const usedTokens = [selectedToken];
     
     for (let i = 2; i <= playerCount; i++) {
-      const availableTokens = TOKENS.filter(t => !usedTokens.includes(t.id));
-      if (availableTokens.length === 0) break;
+      const availableTokens = allTokens.filter(t => !usedTokens.includes(t.id) && !t.id.startsWith('custom-'));
+      const pool = availableTokens.length > 0 ? availableTokens : TOKENS;
       
-      const aiToken = availableTokens[Math.floor(Math.random() * availableTokens.length)];
+      const aiToken = pool[Math.floor(Math.random() * pool.length)];
       usedTokens.push(aiToken.id);
       
       aiPlayers.push({
@@ -80,9 +93,9 @@ export function TokenSelection() {
     setCurrentPlayer(0);
 
     // Load properties for selected theme or use default
-    if (selectedTheme) {
+    if (currentTheme) {
       import('@/data/themes').then(({ themes }) => {
-        const theme = themes[selectedTheme];
+        const theme = themes[currentTheme];
         if (theme && theme.properties) {
           // Convert theme properties to store format
           const boardProperties = theme.properties.map((p: any, index: number) => ({
@@ -97,7 +110,8 @@ export function TokenSelection() {
           setBoard(boardProperties);
         }
         setPhase('playing');
-      }).catch(() => {
+      }).catch((e) => {
+        console.error("Failed to load theme:", e);
         // Fallback to playing phase if theme loading fails
         setPhase('playing');
       });
@@ -133,7 +147,7 @@ export function TokenSelection() {
           <div className="space-y-3">
             <Label className="text-lg font-semibold">Select Your Token</Label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {TOKENS.map((token) => (
+              {allTokens.map((token: any) => (
                 <Card
                   key={token.id}
                   className={`p-4 cursor-pointer transition-all hover:shadow-lg ${
@@ -144,8 +158,16 @@ export function TokenSelection() {
                   onClick={() => setSelectedToken(token.id)}
                 >
                   <div className="text-center">
-                    <div className="text-4xl mb-2">{token.icon}</div>
-                    <div className="font-semibold">{token.name}</div>
+                    {token.imageUrl ? (
+                      <img
+                        src={token.imageUrl}
+                        alt={token.name}
+                        className="w-16 h-16 mx-auto mb-2 object-contain"
+                      />
+                    ) : (
+                      <div className="text-4xl mb-2">{token.icon}</div>
+                    )}
+                    <div className="font-semibold text-sm">{token.name}</div>
                   </div>
                 </Card>
               ))}
