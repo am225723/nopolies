@@ -27,6 +27,7 @@ export interface Player {
   token: string;
   color: string;
   isAI?: boolean;
+  inJail?: boolean;
 }
 
 export interface GameSettings {
@@ -50,18 +51,19 @@ interface MonopolyStore {
   selectedProperty: Property | null;
   winner: Player | null;
   customBoard: CustomBoard;
+  customTokens: string[];
   properties: Property[];
   selectedTheme: string;
-  customTokens: string[];
   
   // Actions
   setPhase: (phase: GamePhase) => void;
   setPlayers: (players: Player[]) => void;
   setCustomBoard: (board: CustomBoard) => void;
+  addCustomToken: (token: string) => void;
   setTheme: (theme: string) => void;
   setProperties: (properties: Property[]) => void;
-  addCustomToken: (tokenUrl: string) => void;
   addPlayer: (player: Player) => void;
+  updatePlayer: (playerId: string, data: Partial<Player>) => void;
   removePlayer: (playerId: string) => void;
   setCurrentPlayer: (index: number) => void;
   setBoard: (board: Property[]) => void;
@@ -144,26 +146,32 @@ const useMonopolyStore = create<MonopolyStore>()(
       selectedProperty: null,
       winner: null,
       customBoard: { name: 'Custom Board', properties: [] },
+      customTokens: [],
       properties: defaultProperties,
       selectedTheme: 'classic',
-      customTokens: [],
 
       setPhase: (phase) => set({ phase }),
       
       setPlayers: (players) => set({ players }),
       
       setCustomBoard: (board) => set({ customBoard: board }),
+
+      addCustomToken: (token) => set((state) => ({
+        customTokens: [...state.customTokens, token]
+      })),
       
       setTheme: (theme) => set({ selectedTheme: theme }),
       
       setProperties: (properties) => set({ properties, board: properties }),
       
-      addCustomToken: (tokenUrl) => set((state) => ({
-        customTokens: [...state.customTokens, tokenUrl],
-      })),
-      
       addPlayer: (player) => set((state) => ({
         players: [...state.players, player],
+      })),
+
+      updatePlayer: (playerId, data) => set((state) => ({
+        players: state.players.map((p) =>
+          p.id === playerId ? { ...p, ...data } : p
+        ),
       })),
       
       removePlayer: (playerId) => set((state) => ({

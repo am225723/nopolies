@@ -125,8 +125,7 @@ export function TokenCreator() {
 
           <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-6">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> AI-generated tokens use Gemini image generation through Replit AI Integrations. 
-              Usage is billed to your Replit credits.
+              <strong>Note:</strong> AI-generated tokens use Pollinations AI for image generation.
             </p>
           </div>
 

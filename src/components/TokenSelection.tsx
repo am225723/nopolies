@@ -29,6 +29,18 @@ export function TokenSelection() {
   const [playerCount, setPlayerCount] = useState(1);
   const { setPhase, setPlayers, setProperties, setCurrentPlayer, selectedTheme, customTokens } = useMonopoly();
 
+  // Combine default tokens with custom tokens
+  const allTokens: Token[] = [
+    ...TOKENS,
+    ...customTokens.map((url, index) => ({
+      id: `custom-${index}`,
+      name: `Custom Token ${index + 1}`,
+      icon: '🎨',
+      color: '#FFD700',
+      imageUrl: url
+    }))
+  ];
+
   const handleStartGame = () => {
     if (!playerName.trim() || !selectedToken) {
       alert('Please enter your name and select a token');
@@ -39,17 +51,12 @@ export function TokenSelection() {
     setPlayers([]);
 
     // Create the human player
-    // Check if selected token is a custom token (URL) or standard token (ID)
-    const isCustomToken = selectedToken.startsWith('http');
-    const tokenColor = isCustomToken 
-      ? '#' + Math.floor(Math.random()*16777215).toString(16) // Random color for custom tokens
-      : TOKENS.find(t => t.id === selectedToken)?.color || '#000000';
-    
+    const tokenObj = allTokens.find(t => t.id === selectedToken);
     const humanPlayer = {
       id: 'player-1',
       name: playerName.trim(),
-      token: selectedToken,
-      color: tokenColor,
+      token: (tokenObj as any)?.imageUrl || selectedToken,
+      color: tokenObj?.color || '#000000',
       position: 0,
       money: 1500,
       properties: [],
@@ -61,10 +68,10 @@ export function TokenSelection() {
     const usedTokens = [selectedToken];
     
     for (let i = 2; i <= playerCount; i++) {
-      const availableTokens = TOKENS.filter(t => !usedTokens.includes(t.id));
-      if (availableTokens.length === 0) break;
+      const availableTokens = allTokens.filter(t => !usedTokens.includes(t.id) && !t.id.startsWith('custom-'));
+      const pool = availableTokens.length > 0 ? availableTokens : TOKENS;
       
-      const aiToken = availableTokens[Math.floor(Math.random() * availableTokens.length)];
+      const aiToken = pool[Math.floor(Math.random() * pool.length)];
       usedTokens.push(aiToken.id);
       
       aiPlayers.push({
@@ -103,12 +110,13 @@ export function TokenSelection() {
           setProperties(boardProperties);
         }
         setPhase('playing');
-      }).catch(() => {
+      }).catch((e) => {
+        console.error("Failed to load theme:", e);
         // Fallback to playing phase if theme loading fails
         setPhase('playing');
       });
     } else {
-      // Use default properties for classic theme
+      // Default to playing phase
       setPhase('playing');
     }
   };
@@ -139,7 +147,7 @@ export function TokenSelection() {
           <div className="space-y-3">
             <Label className="text-lg font-semibold">Select Your Token</Label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {TOKENS.map((token) => (
+              {allTokens.map((token: any) => (
                 <Card
                   key={token.id}
                   className={`p-4 cursor-pointer transition-all hover:shadow-lg ${
@@ -150,29 +158,16 @@ export function TokenSelection() {
                   onClick={() => setSelectedToken(token.id)}
                 >
                   <div className="text-center">
-                    <div className="text-4xl mb-2">{token.icon}</div>
-                    <div className="font-semibold">{token.name}</div>
-                  </div>
-                </Card>
-              ))}
-              {/* Custom AI Tokens */}
-              {customTokens.map((tokenUrl, index) => (
-                <Card
-                  key={`custom-${index}`}
-                  className={`p-4 cursor-pointer transition-all hover:shadow-lg ${
-                    selectedToken === tokenUrl
-                      ? 'ring-2 ring-green-500 bg-green-50'
-                      : 'hover:scale-105'
-                  }`}
-                  onClick={() => setSelectedToken(tokenUrl)}
-                >
-                  <div className="text-center">
-                    <img 
-                      src={tokenUrl} 
-                      alt={`Custom Token ${index + 1}`}
-                      className="w-16 h-16 mx-auto mb-2 object-contain"
-                    />
-                    <div className="font-semibold text-xs">Custom {index + 1}</div>
+                    {token.imageUrl ? (
+                      <img
+                        src={token.imageUrl}
+                        alt={token.name}
+                        className="w-16 h-16 mx-auto mb-2 object-contain"
+                      />
+                    ) : (
+                      <div className="text-4xl mb-2">{token.icon}</div>
+                    )}
+                    <div className="font-semibold text-sm">{token.name}</div>
                   </div>
                 </Card>
               ))}

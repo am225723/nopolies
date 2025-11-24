@@ -111,7 +111,6 @@ export function TokenCreator() {
                       size="sm"
                       className="w-full"
                       onClick={() => {
-                        // Save token to store
                         addCustomToken(url);
                         alert('Token saved! You can now use it in game setup.');
                       }}
