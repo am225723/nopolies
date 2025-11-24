@@ -11,9 +11,9 @@ import { BoardCreator } from "./components/BoardCreator";
 import { TokenCreator } from "./components/TokenCreator";
 import { TokenSelection } from "./components/TokenSelection";
 import { MultiplayerLobby } from "./components/MultiplayerLobby";
-import { Board3D } from "./components/Board3D";
-import { GamePiece } from "./components/GamePiece";
-import { DicePair } from "./components/Dice3D";
+import { EnhancedBoard3D } from "./components/EnhancedBoard3D";
+import { EnhancedGamePiece } from "./components/EnhancedGamePiece";
+import { EnhancedDicePair } from "./components/EnhancedDice3D";
 import { GameUI } from "./components/GameUI";
 import { CameraControls } from "./components/CameraControls";
 
@@ -74,15 +74,15 @@ function App() {
               <pointLight position={[-10, 10, -10]} intensity={0.5} />
 
               <Suspense fallback={null}>
-                <Board3D />
+                <EnhancedBoard3D />
                 {players.map(player => (
-                  <GamePiece
+                  <EnhancedGamePiece
                     key={player.id}
                     player={player}
                     targetPosition={player.position}
                   />
                 ))}
-                <DicePair
+                <EnhancedDicePair
                   dice1={diceValues[0]}
                   dice2={diceValues[1]}
                   isRolling={isRolling}

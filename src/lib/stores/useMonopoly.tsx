@@ -16,6 +16,9 @@ export interface Property {
   rent?: number[];
   color?: string;
   position: number;
+  houses?: number;
+  hasHotel?: boolean;
+  owner?: string | null;
 }
 
 export interface Player {
