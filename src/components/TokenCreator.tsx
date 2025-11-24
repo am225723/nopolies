@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function TokenCreator() {
-  const { setPhase, selectedTheme } = useMonopoly();
+  const { setPhase, currentTheme, addCustomToken } = useMonopoly();
   const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
   const [generatedTokens, setGeneratedTokens] = useState<string[]>([]);
@@ -19,7 +19,7 @@ export function TokenCreator() {
       const response = await fetch("/api/generate-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, theme: selectedTheme })
+        body: JSON.stringify({ prompt, theme: currentTheme })
       });
       
       if (response.ok) {
@@ -111,8 +111,8 @@ export function TokenCreator() {
                       size="sm"
                       className="w-full"
                       onClick={() => {
-                        // Save token selection
-                        console.log("Selected token:", url);
+                        addCustomToken(url);
+                        setPhase("player_setup");
                       }}
                     >
                       Use This

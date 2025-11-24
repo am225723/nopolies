@@ -6,11 +6,11 @@ import { themes } from "@/data/themes";
 import { useState } from "react";
 
 export function ThemeSelection() {
-  const { selectedTheme, players, setPhase, setProperties, addPlayer, removePlayer, updatePlayer, customBoard } = useMonopoly();
+  const { currentTheme, players, setPhase, setBoard, addPlayer, removePlayer, updatePlayer, customBoard } = useMonopoly();
   const [newPlayerName, setNewPlayerName] = useState("");
 
-  const theme = selectedTheme && selectedTheme !== "custom" ? themes[selectedTheme] : null;
-  const isCustomBoard = selectedTheme === "custom";
+  const theme = currentTheme && currentTheme !== "custom" ? themes[currentTheme] : null;
+  const isCustomBoard = currentTheme === "custom";
 
   if (!theme && !isCustomBoard) return null;
 
@@ -22,11 +22,9 @@ export function ThemeSelection() {
         return {
           ...cloned,
           id: cloned.position, // Deterministic ID based on position
-          owner: null, // Reset ownership
-          houses: 0 // Reset houses
         };
       });
-      setProperties(freshProperties);
+      setBoard(freshProperties);
     } else if (theme) {
       // Deep clone theme properties to prevent shared references with base theme data
       const propertiesWithIds = theme.properties.map((prop) => {
@@ -34,11 +32,9 @@ export function ThemeSelection() {
         return {
           ...cloned,
           id: cloned.position, // Use position as ID for consistency
-          owner: null,
-          houses: 0
         };
       });
-      setProperties(propertiesWithIds);
+      setBoard(propertiesWithIds);
     }
     setPhase("playing");
   };
