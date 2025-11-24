@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generateGameToken } from "./ai-service";
+import { MultiplayerManager } from "./multiplayer";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Token generation endpoint
@@ -27,6 +28,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+
+  // Initialize multiplayer manager
+  const multiplayerManager = new MultiplayerManager(httpServer);
+
+  // Multiplayer stats endpoint
+  app.get("/api/multiplayer/stats", (_req, res) => {
+    res.json({
+      rooms: multiplayerManager.getRoomCount(),
+      players: multiplayerManager.getPlayerCount(),
+    });
+  });
 
   return httpServer;
 }

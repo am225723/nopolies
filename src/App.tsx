@@ -9,6 +9,7 @@ import { Menu } from "./components/Menu";
 import { ThemeSelection } from "./components/ThemeSelection";
 import { BoardCreator } from "./components/BoardCreator";
 import { TokenCreator } from "./components/TokenCreator";
+import { MultiplayerLobby } from "./components/MultiplayerLobby";
 import { Board3D } from "./components/Board3D";
 import { GamePiece } from "./components/GamePiece";
 import { GameUI } from "./components/GameUI";
@@ -30,6 +31,7 @@ function App() {
         {phase === "theme_selection" && <ThemeSelection />}
         {phase === "board_creator" && <BoardCreator />}
         {phase === "token_creator" && <TokenCreator />}
+        {phase === "multiplayer_lobby" && <MultiplayerLobby />}
 
         {(phase === "playing" || phase === "property_action") && (
           <>
