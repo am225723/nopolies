@@ -5,7 +5,7 @@ export type GamePhase = "menu" | "theme_selection" | "board_creator" | "token_cr
 
 export interface CustomBoard {
   name: string;
-  spaces: Property[];
+  properties: Property[];
 }
 
 export interface Property {
@@ -49,10 +49,12 @@ interface MonopolyStore {
   isRolling: boolean;
   selectedProperty: Property | null;
   winner: Player | null;
+  customBoard: CustomBoard;
   
   // Actions
   setPhase: (phase: GamePhase) => void;
   setPlayers: (players: Player[]) => void;
+  setCustomBoard: (board: CustomBoard) => void;
   addPlayer: (player: Player) => void;
   removePlayer: (playerId: string) => void;
   setCurrentPlayer: (index: number) => void;
@@ -135,10 +137,13 @@ const useMonopolyStore = create<MonopolyStore>()(
       isRolling: false,
       selectedProperty: null,
       winner: null,
+      customBoard: { name: 'Custom Board', properties: [] },
 
       setPhase: (phase) => set({ phase }),
       
       setPlayers: (players) => set({ players }),
+      
+      setCustomBoard: (board) => set({ customBoard: board }),
       
       addPlayer: (player) => set((state) => ({
         players: [...state.players, player],

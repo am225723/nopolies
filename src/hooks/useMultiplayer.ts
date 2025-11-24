@@ -30,7 +30,7 @@ export function useMultiplayer(config: MultiplayerConfig = {}) {
   const serverUrl = config.serverUrl || 
     (typeof window !== 'undefined' 
       ? `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`
-      : 'ws://localhost:5000/ws');
+      : 'ws://localhost:3001/ws');
 
   const connect = useCallback(() => {
     if (ws.current?.readyState === WebSocket.OPEN) {

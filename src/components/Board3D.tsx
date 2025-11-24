@@ -139,6 +139,13 @@ export function Board3D() {
 }
 
 function BoardSpace({ position, x, z, property, isCorner, isChance, isCommunityChest }: any) {
+  const { setSelectedProperty } = useMonopoly();
+  const handleClick = () => {
+    if (property) {
+      console.log('Property clicked:', property.name);
+      setSelectedProperty(property);
+    }
+  };
   const size = isCorner ? SPACE_SIZE * 1.2 : SPACE_SIZE;
   const color = property ? getPropertyColor(property.color) : "#EEEEEE";
 
@@ -155,7 +162,7 @@ function BoardSpace({ position, x, z, property, isCorner, isChance, isCommunityC
   }
 
   return (
-    <group position={[x, 0, z]}>
+    <group position={[x, 0, z]} onClick={handleClick}>
       {/* Space base with rounded corners */}
       <RoundedBox args={[size * 0.9, 0.2, size * 0.9]} radius={0.05} smoothness={4} position={[0, 0.1, 0]} receiveShadow castShadow>
         <meshStandardMaterial color="#FFFFFF" metalness={0.1} roughness={0.8} />
