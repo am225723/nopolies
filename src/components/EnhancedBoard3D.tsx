@@ -360,7 +360,6 @@ function BoardSpace({ position, x, z, property, isCorner, isChance, isCommunityC
           anchorX="center"
           anchorY="middle"
           maxWidth={size * 0.8}
-          font="/fonts/Inter-Bold.woff"
         >
           {property.name}
         </Text>
@@ -399,7 +398,6 @@ function BoardSpace({ position, x, z, property, isCorner, isChance, isCommunityC
             color="#000000"
             anchorX="center"
             anchorY="middle"
-            font="/fonts/Inter-Bold.woff"
           >
             ${property.price}
           </Text>
@@ -440,7 +438,6 @@ function CornerSpace({ position, x, z, size }: any) {
         color="#FFFFFF"
         anchorX="center"
         anchorY="middle"
-        font="/fonts/Inter-Bold.woff"
         outlineWidth={0.02}
         outlineColor="#000000"
       >
@@ -485,7 +482,6 @@ function ChanceSpace({ position, x, z, size }: any) {
           color="#FF0000"
           anchorX="center"
           anchorY="middle"
-          font="/fonts/Inter-Bold.woff"
         >
           ?
         </Text>
