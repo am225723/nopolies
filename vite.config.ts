@@ -22,6 +22,29 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, "dist"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor libraries
+          vendor: ['react', 'react-dom'],
+          // Split Three.js and related 3D libraries
+          three: ['three', '@react-three/fiber', '@react-three/drei'],
+          // Split UI components
+          ui: [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-select',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-checkbox',
+            '@radix-ui/react-slot',
+            '@radix-ui/react-label',
+            '@radix-ui/react-tabs',
+          ],
+          // Split game state and utilities
+          utils: ['zustand'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
   },
   // Add support for large models and audio files
   assetsInclude: ["**/*.gltf", "**/*.glb", "**/*.mp3", "**/*.ogg", "**/*.wav"],
